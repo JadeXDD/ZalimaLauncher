@@ -20,12 +20,12 @@ package com.movtery.zalithlauncher.ui.vulkan_checker
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -66,31 +66,19 @@ fun VulkanChecker(
                         CompositionLocalProvider(
                             LocalTextStyle provides MaterialTheme.typography.labelMedium
                         ) {
-
-                            //设备不支持 Vulkan
-                            if (isUnsupp) {
-                                Text(stringResource(R.string.game_vulkan_check_unsupp))
+                            //检测结果
+                            val result = if (isUnsupp) {
+                                stringResource(R.string.game_vulkan_check_unsupp)
                             } else {
-                                Text(stringResource(R.string.game_vulkan_check_supp))
+                                stringResource(R.string.game_vulkan_check_supp)
                             }
+                            Text(result)
 
                             if (data != null) {
                                 //版本号
                                 Text(stringResource(R.string.game_vulkan_check_version, data.versionString))
                                 //是否使用Turnip
                                 Text(stringResource(R.string.game_vulkan_check_turnip, useTurnip))
-
-                                //不支持时，显示缺失的扩展、功能
-                                if (!data.isAllSupported) {
-                                    TextGroup(
-                                        text = stringResource(R.string.game_vulkan_check_missing_extensions),
-                                        columns = data.missingExtensions
-                                    )
-                                    TextGroup(
-                                        text = stringResource(R.string.game_vulkan_check_missing_features),
-                                        columns = data.missingFeatures
-                                    )
-                                }
 
                                 if (data.isAllSupported) {
                                     TextGroup(
@@ -101,13 +89,23 @@ fun VulkanChecker(
                                         text = stringResource(R.string.game_vulkan_check_features),
                                         columns = VulkanCapabilities.REQUIRED_FEATURES
                                     )
+                                } else {
+                                    //不支持时，显示缺失的扩展、功能
+                                    TextGroup(
+                                        text = stringResource(R.string.game_vulkan_check_missing_extensions),
+                                        columns = data.missingExtensions
+                                    )
+                                    TextGroup(
+                                        text = stringResource(R.string.game_vulkan_check_missing_features),
+                                        columns = data.missingFeatures
+                                    )
                                 }
                             }
                         }
                     }
                 },
                 confirmButton = {
-                    FilledTonalButton(
+                    Button(
                         onClick = {
                             onChange(VCOperation.None)
                         }
@@ -125,14 +123,14 @@ private fun TextGroup(
     text: String,
     columns: List<String>,
     modifier: Modifier = Modifier,
-    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(4.dp)
 ) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = horizontalArrangement
-    ) {
+    Column(modifier = modifier) {
         Text(text)
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp)
+        ) {
             columns.forEach { string ->
                 Text(string)
             }
