@@ -98,27 +98,34 @@ Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeCheckVulkan(
     LOAD_VK_FUNC(vkGetPhysicalDeviceFeatures);
     LOAD_VK_FUNC(vkEnumerateDeviceExtensionProperties);
     LOAD_VK_FUNC(vkGetPhysicalDeviceFeatures2);
+    LOAD_VK_FUNC(vkGetPhysicalDeviceProperties);
+    LOAD_VK_FUNC(vkGetPhysicalDeviceProperties2);
 
     // 若驱动仅暴露 KHR 别名，尝试二次加载
     if (!pvkGetPhysicalDeviceFeatures2) {
         pvkGetPhysicalDeviceFeatures2 = (PFN_vkGetPhysicalDeviceFeatures2)
             dlsym(vulkan_handle, "vkGetPhysicalDeviceFeatures2KHR");
     }
+    if (!pvkGetPhysicalDeviceProperties2) {
+        pvkGetPhysicalDeviceProperties2 = (PFN_vkGetPhysicalDeviceProperties2)
+                dlsym(vulkan_handle, "vkGetPhysicalDeviceProperties2KHR");
+    }
 
-    if (!pvkCreateInstance || !pvkDestroyInstance || !pvkEnumeratePhysicalDevices || !pvkEnumerateDeviceExtensionProperties) {
+    if (!pvkCreateInstance || !pvkDestroyInstance || !pvkEnumeratePhysicalDevices ||
+        !pvkEnumerateDeviceExtensionProperties || !pvkGetPhysicalDeviceProperties) {
         LOG_E("Essential Vulkan functions missing, aborting.");
         dlclose(vulkan_handle);
         return NULL;
     }
 
     // 查询实例版本
-    uint32_t apiVersion = VK_API_VERSION_1_0;
+    uint32_t instanceApiVersion = VK_API_VERSION_1_0;
     if (pvkEnumerateInstanceVersion) {
-        if (pvkEnumerateInstanceVersion(&apiVersion) == VK_SUCCESS) {
+        if (pvkEnumerateInstanceVersion(&instanceApiVersion) == VK_SUCCESS) {
             LOG_I("Instance reports Vulkan %u.%u.%u",
-                  (unsigned int)VK_API_VERSION_MAJOR(apiVersion),
-                  (unsigned int)VK_API_VERSION_MINOR(apiVersion),
-                  (unsigned int)VK_API_VERSION_PATCH(apiVersion));
+                  (unsigned int)VK_API_VERSION_MAJOR(instanceApiVersion),
+                  (unsigned int)VK_API_VERSION_MINOR(instanceApiVersion),
+                  (unsigned int)VK_API_VERSION_PATCH(instanceApiVersion));
         } else {
             LOG_W("vkEnumerateInstanceVersion failed, fallback to 1.0");
         }
@@ -131,7 +138,7 @@ Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeCheckVulkan(
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pApplicationName = "ZalithLauncher",
         .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
-        .apiVersion = apiVersion
+        .apiVersion = instanceApiVersion
     };
     VkInstanceCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -179,6 +186,39 @@ Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeCheckVulkan(
     VkPhysicalDevice physicalDevice = devices[0];
     free(devices);
     LOG_I("Found %u physical device(s), inspecting first one.", deviceCount);
+
+    // 查询设备版本
+    uint32_t deviceApiVersion = VK_API_VERSION_1_0;
+
+    // 优先使用 vkGetPhysicalDeviceProperties2 获取设备属性
+    if (pvkGetPhysicalDeviceProperties2) {
+        VkPhysicalDeviceVulkan11Properties vk11Props = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES,
+                .pNext = NULL
+        };
+        VkPhysicalDeviceProperties2 deviceProps2 = {
+                .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+                .pNext = &vk11Props
+        };
+
+        pvkGetPhysicalDeviceProperties2(physicalDevice, &deviceProps2);
+        deviceApiVersion = deviceProps2.properties.apiVersion;
+
+        LOG_I("Device (via vkGetPhysicalDeviceProperties2) reports Vulkan %u.%u.%u",
+              (unsigned int)VK_API_VERSION_MAJOR(deviceApiVersion),
+              (unsigned int)VK_API_VERSION_MINOR(deviceApiVersion),
+              (unsigned int)VK_API_VERSION_PATCH(deviceApiVersion));
+    } else {
+        // 降级到 v1.0 的 vkGetPhysicalDeviceProperties
+        VkPhysicalDeviceProperties deviceProps;
+        pvkGetPhysicalDeviceProperties(physicalDevice, &deviceProps);
+        deviceApiVersion = deviceProps.apiVersion;
+
+        LOG_I("Device (via vkGetPhysicalDeviceProperties) reports Vulkan %u.%u.%u",
+              (unsigned int)VK_API_VERSION_MAJOR(deviceApiVersion),
+              (unsigned int)VK_API_VERSION_MINOR(deviceApiVersion),
+              (unsigned int)VK_API_VERSION_PATCH(deviceApiVersion));
+    }
 
     // 枚举设备扩展
     uint32_t extCount = 0;
@@ -315,9 +355,11 @@ Java_com_movtery_zalithlauncher_utils_device_VulkanChecker_nativeCheckVulkan(
     jclass capClass = (*env)->FindClass(env, "com/movtery/zalithlauncher/utils/device/VulkanCapabilities");
     jmethodID capInit = (*env)->GetMethodID(env, capClass, "<init>", "(IIILjava/util/List;Ljava/util/Map;)V");
 
-    jint major = (jint)VK_API_VERSION_MAJOR(apiVersion);
-    jint minor = (jint)VK_API_VERSION_MINOR(apiVersion);
-    jint patch = (jint)VK_API_VERSION_PATCH(apiVersion);
+    jint major = (jint)VK_API_VERSION_MAJOR(deviceApiVersion);
+    jint minor = (jint)VK_API_VERSION_MINOR(deviceApiVersion);
+    jint patch = (jint)VK_API_VERSION_PATCH(deviceApiVersion);
+
+    LOG_I("Final device Vulkan version: %d.%d.%d", major, minor, patch);
 
     jobject result = (*env)->NewObject(env, capClass, capInit,
                                        major, minor, patch,

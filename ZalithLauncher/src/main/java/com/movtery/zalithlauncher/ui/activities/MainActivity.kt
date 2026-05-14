@@ -32,6 +32,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
@@ -63,6 +65,8 @@ import com.movtery.zalithlauncher.ui.screens.main.crashlogs.LogShareMenuOperatio
 import com.movtery.zalithlauncher.ui.screens.main.crashlogs.ShareLinkOperation
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.ui.theme.feativals.FestivalEffects
+import com.movtery.zalithlauncher.ui.vulkan_checker.VCOperation
+import com.movtery.zalithlauncher.ui.vulkan_checker.VulkanChecker
 import com.movtery.zalithlauncher.upgrade.TooFrequentOperationException
 import com.movtery.zalithlauncher.utils.compareLangTag
 import com.movtery.zalithlauncher.utils.copyText
@@ -154,6 +158,8 @@ class MainActivity : BaseAppCompatActivity() {
      * 是否开启捕获按键模式
      */
     private var isCaptureKey = false
+
+    private var vcOperation by mutableStateOf<VCOperation>(VCOperation.None)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -260,17 +266,7 @@ class MainActivity : BaseAppCompatActivity() {
             containsChinese = isChinese(this@MainActivity)
         )
 
-        if (AllSettings.zinkPreferSystemDriver.getValue()) {
-            VulkanChecker.checkCapabilities(null, null, null)
-        } else {
-            val driver = DriverPluginManager.getDriver()
-            if (driver.isLauncher) {
-                VulkanChecker.checkCapabilities(null, null, null)
-            } else {
-                val tempDir = File(PathManager.DIR_CACHE, "vulkan_temp")
-                VulkanChecker.checkCapabilities(null, driver.path, tempDir.absolutePath)
-            }
-        }
+        checkVulkan()
 
         setContent {
             ZalithLauncherTheme(
@@ -439,6 +435,13 @@ class MainActivity : BaseAppCompatActivity() {
                     },
                     onLinkClick = { eventViewModel.sendEvent(EventViewModel.Event.OpenLink(it)) }
                 )
+
+                VulkanChecker(
+                    operation = vcOperation,
+                    onChange = {
+                        vcOperation = it
+                    }
+                )
             }
         }
     }
@@ -446,6 +449,21 @@ class MainActivity : BaseAppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleImportIfNeeded(intent)
+    }
+
+    /**
+     * 检查设备 Vulkan 支持情况
+     */
+    private fun checkVulkan() {
+        val driver = DriverPluginManager.getDriver()
+        val useTurnip = !(AllSettings.zinkPreferSystemDriver.getValue() || driver.isLauncher)
+        val result = if (useTurnip) {
+            val tempDir = File(PathManager.DIR_CACHE, "vulkan_temp")
+            VulkanChecker.checkCapabilities(null, driver.path, tempDir.absolutePath)
+        } else {
+            VulkanChecker.checkCapabilities(null, null, null)
+        }
+        vcOperation = VCOperation.Result(result, useTurnip)
     }
 
     /**

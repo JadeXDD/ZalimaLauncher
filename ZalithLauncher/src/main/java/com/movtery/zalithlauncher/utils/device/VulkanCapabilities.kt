@@ -18,8 +18,11 @@
 
 package com.movtery.zalithlauncher.utils.device
 
-import android.util.Log
 import androidx.annotation.Keep
+import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
+import com.movtery.zalithlauncher.utils.logging.Logger.lError
+import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
+import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import org.apache.commons.io.FileUtils
 import java.io.File
 
@@ -31,6 +34,10 @@ data class VulkanCapabilities(
     val extensions: List<String>,
     val features: Map<String, Boolean>
 ) {
+    /** Vulkan 版本字符串 */
+    val versionString: String
+        get() = "$apiVersionMajor.$apiVersionMinor.$apiVersionPatch"
+
     /** 检查 Vulkan 版本是否至少为 1.2 */
     val isVersionSupported: Boolean
         get() = apiVersionMajor > 1 || (apiVersionMajor == 1 && apiVersionMinor >= 2)
@@ -76,21 +83,19 @@ fun interface VulkanLogCallback {
 }
 
 object VulkanChecker {
-    private const val TAG = "VulkanChecker"
-
     init {
         try {
             System.loadLibrary("vulkan_check")
             nativeSetLogCallback { level, msg ->
                 when (level) {
-                    "INFO" -> Log.i(TAG, msg)
-                    "WARN" -> Log.w(TAG, msg)
-                    "ERROR" -> Log.e(TAG, msg)
-                    else -> Log.d(TAG, msg)
+                    "INFO" -> lInfo(msg)
+                    "WARN" -> lWarning(msg)
+                    "ERROR" -> lError(msg)
+                    else -> lDebug(msg)
                 }
             }
         } catch (e: UnsatisfiedLinkError) {
-            Log.e(TAG, "Failed to load vulkan_check library", e)
+            lError("Failed to load vulkan_check library", e)
         }
     }
 
@@ -109,21 +114,21 @@ object VulkanChecker {
                 nativeDir = nativeDir,
                 cacheDir = cacheDir,
             )?.also { caps ->
-                Log.i(TAG, "Vulkan version: ${caps.apiVersionMajor}.${caps.apiVersionMinor}.${caps.apiVersionPatch}")
-                Log.i(TAG, "Version >= 1.2: ${caps.isVersionSupported}")
+                lInfo("Vulkan version: ${caps.versionString}")
+                lInfo("Version >= 1.2: ${caps.isVersionSupported}")
                 if (caps.missingExtensions.isNotEmpty()) {
-                    Log.w(TAG, "Missing required extensions: ${caps.missingExtensions}")
+                    lWarning("Missing required extensions: ${caps.missingExtensions}")
                 }
                 if (caps.missingFeatures.isNotEmpty()) {
-                    Log.w(TAG, "Missing required features: ${caps.missingFeatures}")
+                    lWarning("Missing required features: ${caps.missingFeatures}")
                 }
-                Log.i(TAG, "All requirements satisfied: ${caps.isAllSupported}")
+                lInfo("All requirements satisfied: ${caps.isAllSupported}")
             }
         } catch (e: UnsatisfiedLinkError) {
-            Log.e(TAG, "Native library or method not found", e)
+            lError("Native library or method not found", e)
             null
         } catch (e: Exception) {
-            Log.e(TAG, "Native check failed", e)
+            lError("Native check failed", e)
             null
         } finally {
             if (nativeDir != null && cacheDir != null) {
