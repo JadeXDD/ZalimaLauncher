@@ -582,7 +582,7 @@
     <string name="settings_renderer_global_renderer_title">Perender Global</string>
     <string name="settings_renderer_shader_dump_title">Log Shader</string>
     <string name="settings_renderer_shader_dump_summary">Keluarkan kode shader yang dikonversi ke file log selama runtime game untuk memudahkan debugging dan menganalisa proses rendering grafis</string>
-    <string name="settings_renderer_vulkan_driver_system_summary">Saat diaktifkan, peluncur akan memaksa penggunaan driver Vulkan bawaan sistem (untuk GPU Adreno), alih-alih driver Turnip bawaan. Pengaturan ini hanya memengaruhi backend Zink dan mod terkait yang menggunakan rendering Vulkan</string>
+    <string name="settings_renderer_vulkan_driver_system_summary">Saat diaktifkan, launcher akan memaksa penggunaan driver Vulkan bawaan sistem (untuk GPU Adreno), alih-alih driver Turnip bawaan. Pengaturan ini hanya memengaruhi backend Zink dan mod terkait yang menggunakan rendering Vulkan</string>
     <string name="settings_renderer_zink_driver_adreno">Launcher mendeteksi perangkatmu menggunakan GPU Adreno. Mengaktifkan opsi ini dapat menyebabkan perender Zink tidak berfungsi. Apakah Anda yakin ingin mengaktifkannya?</string>
     <string name="settings_renderer_vsync_in_zink_title">Sinkronisasi Vertikal Zink</string>
     <string name="settings_renderer_vsync_in_zink_summary">Aktifkan sinkronisasi vertikal untuk perender Zink melalui antarmuka sistem</string>
@@ -1209,6 +1209,6 @@
     <string name="game_vulkan_check_missing_extensions">Ekstensi yang tidak tersedia:</string>
     <string name="game_vulkan_check_features">Fitur yang diperlukan:</string>
     <string name="game_vulkan_check_missing_features">Fitur yang tidak tersedia:</string>
-    <string name="game_vulkan_check_unsupp">Perangkat kamu tidak bisa menjalankan Minecraft 26.2+ dengan vulkan</string>
+    <string name="game_vulkan_check_unsupp">Perangkat kamu tidak bisa menjalankan Minecraft 26.2+ dengan Vulkan</string>
     <string name="game_vulkan_check_supp">Perangkat kamu bisa menjalankan Minecraft 26.2+ dengan Vulkan</string>
 </resources>
