@@ -35,7 +35,12 @@ enum class ModrinthProjectType(val platform: PlatformClasses?) {
 
     @SerialName("shader")
     SHADER(PlatformClasses.SHADERS),
+}
 
-    @SerialName("minecraft_java_server")
-    SERVER(null),
+fun String.mapModrinthType(): ModrinthProjectType? = when (this) {
+    "mod" -> ModrinthProjectType.MOD
+    "modpack" -> ModrinthProjectType.MODPACK
+    "resourcepack" -> ModrinthProjectType.RESOURCEPACK
+    "shader" -> ModrinthProjectType.SHADER
+    else -> null
 }

@@ -91,7 +91,7 @@ class ModrinthSingleProject(
 
     /** 项目的项目类型 */
     @SerialName("project_type")
-    val projectType: ModrinthProjectType,
+    val projectType: String,
 
     /** 项目的下载总数 */
     @SerialName("downloads")
@@ -244,7 +244,9 @@ class ModrinthSingleProject(
 
     override fun platformId(): String = id
 
-    override fun platformClasses(defaultClasses: PlatformClasses): PlatformClasses = projectType.platform ?: defaultClasses
+    override fun platformClasses(defaultClasses: PlatformClasses): PlatformClasses {
+        return projectType.mapModrinthType()?.platform ?: defaultClasses
+    }
 
     override fun platformSlug(): String = slug
 
@@ -269,7 +271,7 @@ class ModrinthSingleProject(
     }
 
     override fun checkClasses() {
-        if (projectType.platform == null) throw UnsupportedClassesException(projectType.name)
+        if (projectType.mapModrinthType() == null) throw UnsupportedClassesException(projectType)
     }
 
     override fun platformCategories(classes: PlatformClasses): List<PlatformFilterCode>? {
@@ -283,7 +285,7 @@ class ModrinthSingleProject(
     }
 
     override fun platformUrls(defaultClasses: PlatformClasses): PlatformProject.Urls {
-        val classes = projectType.platform ?: defaultClasses
+        val classes = projectType.mapModrinthType()?.platform ?: defaultClasses
         return PlatformProject.Urls(
             projectUrl = "https://modrinth.com/${classes.modrinth!!.facetValue()}/${slug}",
             sourceUrl = sourceUrl,

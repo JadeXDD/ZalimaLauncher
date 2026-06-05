@@ -25,7 +25,6 @@ import com.movtery.zalithlauncher.game.download.assets.platform.PlatformFilterCo
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformSearchData
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformSearchResult
 import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.ModrinthModLoaderCategory
-import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.ModrinthProjectType
 import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.ModrinthSide
 import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.MonetizationStatus
 import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.mapModrinthCategory
@@ -76,7 +75,7 @@ class ModrinthSearchResult(
          * 项目类型 **required**
          */
         @SerialName("project_type")
-        val projectType: ModrinthProjectType,
+        val projectType: String,
 
         /**
          * 项目简洁字符串标识符 **un-required**
