@@ -9,11 +9,11 @@
 > This project is a modified version of [Zalith Launcher 2](https://github.com/ZalithLauncher/ZalithLauncher2).  
 > **Zalima Launcher** is an unofficial modified version. It is not affiliated with, endorsed by, or connected to the original Zalith Launcher team.
 
-**Zalima Launcher 2** is a newly designed launcher for **Android devices** tailored for [Minecraft: Java Edition](https://www.minecraft.net/). It features a modern UI built with **Jetpack Compose** and **Material Design 3**, with improved performance and features.
+**Zalima Launcher** is a newly designed launcher for **Android devices** tailored for [Minecraft: Java Edition](https://www.minecraft.net/). It features a modern UI built with **Jetpack Compose** and **Material Design 3**, with improved performance and features.
 
 ## 🌐 Language and Translation Support
 
-We support multiple languages to make Zalima Launcher 2 global!
+We support multiple languages to make Zalima Launcher global!
 Thank you to every language contributor for helping make Zalima Launcher 2 more multilingual and global!
 
 ## 📦 Build Instructions (For Developers)
