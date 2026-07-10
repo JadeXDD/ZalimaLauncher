@@ -1,5 +1,5 @@
 <div align="center">
-    <img width="256" src="ZalimaLauncher/src/main/res/mipmap-xxxhdpi/ic_launcher.png"></img>
+    <img width="512" src="ZalimaLauncher/src/main/res/drawable/app_name_title.png"></img>
 </div>
 
 <div align="center">
