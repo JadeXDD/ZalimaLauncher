@@ -1,4 +1,5 @@
-# Zalima Launcher 2
+# Zalima Launcher
+
 ![Downloads](https://img.shields.io/github/downloads/JadeXDD/ZalimaLauncher/total)
 [![Sponsor](https://img.shields.io/badge/sponsor-30363D?logo=GitHub-Sponsors)](https://github.com/JadeXDD)
 
