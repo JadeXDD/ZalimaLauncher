@@ -1,4 +1,4 @@
-package com.movtery.zalithlauncher;
+package com.movtery.zalimalauncher;
 
 import org.lwjgl.glfw.GLFW;
 
